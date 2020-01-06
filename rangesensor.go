@@ -12,26 +12,26 @@ import (
 	"periph.io/x/periph/host"
 )
 
+var (
+	// You could adjust this value if you are operating under unusual temperature
+	// or pressure conditions (eg. high altitude).
+	speedOfSound = 344 // In meters / second, at sea level, at 21 celsius
+)
+
 // Measurement expresses a sensor measurement and facilitates conversion to
 // various units.
-//
-// It uses constants, found in the datasheet, which are based on the speed of
-// sound in air at sea level (~340 m/s).
-//
-// TODO: Encode the 340m/s assumption as a constant, and derive the other
-// constants from that value.
 type Measurement struct {
 	timeOfFlight time.Duration
 }
 
 // InCentimeters converts the time of flight measurement into centimeters.
 func (r *Measurement) InCentimeters() float32 {
-	return float32(r.timeOfFlight.Microseconds()) / 58
+	return TimeToCentimeters(r.timeOfFlight.Microseconds())
 }
 
 // InInches converts the time of flight measurement into inches.
 func (r *Measurement) InInches() float32 {
-	return float32(r.timeOfFlight.Microseconds()) / 148
+	return TimeToCentimeters(r.timeOfFlight.Microseconds()) / 2.54
 }
 
 // InMicroseconds returns the raw time of flight measurement.
@@ -118,4 +118,19 @@ func (s *Sensor) MeasureDistance() (*Measurement, error) {
 	end = time.Now()
 
 	return &Measurement{end.Sub(start)}, nil
+}
+
+// TimeToCentimeters takes a distance measurement in microseconds and
+// converts that into a distance measurement in centimeters using a series of
+// transparent assumptions.  I do this tediously in long-hand, so if I've made
+// some mistake others can notice and correct it.  :)
+//
+// At the end of the day, this function divides by two and multiplies by
+// 0.0344, which aligns with the datasheet's suggestion to just divide by 58 to
+// get centimeters.
+func TimeToCentimeters(timeOfFlight int64) float32 {
+	centimetersPerSecond := speedOfSound * 100
+	centimetersPerMicrosecond := float32(centimetersPerSecond) / 1e6
+	oneWayTimeOfFlight := float32(timeOfFlight) / 2
+	return oneWayTimeOfFlight * centimetersPerMicrosecond
 }

@@ -111,3 +111,11 @@ func watchPin() {
 		}
 	}
 }
+
+func TestTimeToCentimeters(t *testing.T) {
+	want := float32(speedOfSound * 100) // in cm
+	got := TimeToCentimeters(2e6)
+	if got != want {
+		t.Errorf("TimeToCentimeters(1s), got: %f, want: %f)", got, want)
+	}
+}
