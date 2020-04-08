@@ -44,6 +44,15 @@ func (r *Measurement) InMilliseconds() int64 {
 	return r.timeOfFlight.Milliseconds()
 }
 
+// Trustworthy indicates the reliability of the measurement.  The datasheet
+// indicates claims the module can render distances out to 400cm, but the
+// modules I have experience with are not accurate beyond 200cm.  More
+// importantly, a failed read will often return a spurious result, in the 1k+
+// cm range.
+func (r *Measurement) Trustworthy() bool {
+	return r.InCentimeters() < 200
+}
+
 // Sensor represents an HC-SR04 ultrasonic ranging module.
 //
 // Datasheet: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf

@@ -119,3 +119,14 @@ func TestTimeToCentimeters(t *testing.T) {
 		t.Errorf("TimeToCentimeters(1s), got: %f, want: %f)", got, want)
 	}
 }
+
+func TestTrustworthy(t *testing.T) {
+	good := Measurement{timeOfFlight: 100 * time.Microsecond}
+	if !good.Trustworthy() {
+		t.Errorf("Measurement{100 microseconds}.Trustworthy(), want: true, got: false")
+	}
+	bad := Measurement{timeOfFlight: 100 * time.Second}
+	if bad.Trustworthy() {
+		t.Errorf("Measurement{100 seconds}s.Trustworthy(), want: false, got: true")
+	}
+}
